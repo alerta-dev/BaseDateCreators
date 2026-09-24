@@ -3,7 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
   // Esto avisa en consola si te olvidaste de crear el archivo .env
   // (ver SETUP.md para más detalles)
   console.error(
@@ -12,4 +14,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl ?? '', supabaseAnonKey ?? '');
+// createClient valida el formato de la URL y tira una excepción si está vacía,
+// lo que rompía el render de toda la app (pantalla en blanco) cuando faltaban
+// las variables de entorno. Usamos un valor de relleno con formato válido para
+// evitar ese crash; isSupabaseConfigured indica si hay que mostrar un aviso.
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-anon-key'
+);
